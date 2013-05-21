@@ -1,6 +1,10 @@
 LV-087
 ======
 
-Test repos
-I.R.
-2. Srg Gsk
+Frameworks doc:
+
+http://backbonejs.org - backbones.js
+
+http://docs.pylonsproject.org/en/latest/ - pylons
+
+
