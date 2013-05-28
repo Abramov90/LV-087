@@ -1,0 +1,48 @@
+<html>
+<head>
+    <title>Greetings</title>
+    <style type="text/css">
+        p {
+         text-align:center;
+         letter-spacing: 5px;
+         color: green;
+       }
+        h1 {
+         text-align:center;
+         letter-spacing: 5px;
+         color: green;
+       }
+        div {
+         background-color: yellow;
+       }
+    </style>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js" type="text/javascript"></script>
+</head>
+<body>
+	<div id="clickme">
+		<h2>Press ME</h2>
+		<script>
+			$(document).ready(function(){
+
+			// Using multiple unit types within one animation.
+				$("#clickme").click(function(){
+					$("#niceblock").animate({
+						width: "70%",
+						opacity: 0.4,
+						marginLeft: "0.6in",
+						fontSize: "3em",
+						borderWidth: "10px"
+
+					}, 1500 );
+				});
+
+			});
+		</script>
+		</div>
+    <div id = "niceblock">
+       <h1>NICE</h1>
+       <p>Hello ${c.teamname}!</p>
+       <p>Don't be strict? it's just EXAMPLE</p>
+    </div>
+</body>
+</html>
