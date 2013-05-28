@@ -1,0 +1,3 @@
+include guessword/config/deployment.ini_tmpl
+recursive-include guessword/public *
+recursive-include guessword/templates *
