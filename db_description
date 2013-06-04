@@ -1,0 +1,10 @@
+Created DataBase 'guessWord' with table named 'guessWordMain' that has six columns such as 1.id, 2.name, 3.login, 4.password, 5.birth, 6.value.
+
+To connect this DB to our pylons alchemy you should follow next steps:
+1. install python-sqlalchemy
+2. load the DB in bash using mysql or using phpmyadmin
+3. in directory GuessWord open file 'development.ini' and make the next changes
+# SQLAlchemy database URL
+sqlalchemy.url = mysql://root:1111@127.0.0.1:3306/guessWord
+where 'root' is your username, and '1111' is your password.
+
