@@ -10,7 +10,7 @@ def init_model(engine):
 
     global User
     class User(Base):
-        '''Establishe the connection with a user table in DB
+        '''Establishes the connection with a user table in DB.
         '''
         __tablename__ = 'user'
         

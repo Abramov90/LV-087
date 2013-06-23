@@ -74,6 +74,7 @@ class RegistrationController(BaseController):
             if validate[field](reg_info[field]):
                 answer.append(message[num])
 
+        # adding a new user if no errors found
         if answer == []:
             new_user = User(reg_info["login"], 
                             reg_info["password"], 
