@@ -4,7 +4,7 @@ import logging
 
 from pylons.decorators import jsonify
 from guessword.model.meta import Session
-from guessword.model import User
+from guessword.model.user import User
 import re
 
 
@@ -19,6 +19,11 @@ class RegistrationController(BaseController):
 
     def __email_check(self, email):
         """Returns True if user with specified email already exists in DB.
+
+        :Parameters:
+            email: (unicode) An email provided by the user.
+        :Return:
+            (bool) True if email exists in DB and False otherwise.
         """
         email_exists = \
                 Session.query(User.Email).filter(User.Email == email).count()
@@ -27,6 +32,11 @@ class RegistrationController(BaseController):
 
     def __login_check(self, login):
         """Returns True if user with specified login already exists in DB.
+
+        :Parameters:
+            login: (unicode) A login provided by the user.
+        :Return:
+            (bool) True if login exists in DB and False otherwise.
         """
         login_exists = \
                 Session.query(User.Login).filter(User.Login == login).count()
@@ -35,9 +45,48 @@ class RegistrationController(BaseController):
 
     def __dob_check(self, DOB):
         """Returns True if user has entered DOB data in a wrong format.
+
+        :Parameters:
+            DOB: (unicode) A date of birth provided by user.
+        :Return:
+            (bool) True if DOB is of wrong format and False otherwise.
         """
         if str(DOB) != '' and re.match("\d{4}-\d{2}-\d{2}", str(DOB)) == None:
             return True
+
+    def __validate_registration(self, reg_info):
+        """Returns message ["success"] if user entered data in a required 
+        format and unique login and email 
+        Otherwise returns a list of errors.
+
+        :Parameters:
+            reg_info: (dict of str: unicode) Information about the user.
+        :Return:
+            (list of str) A list of errors found.
+        """
+        # objects needed to be checked
+        validate =  {'login': self.__login_check,
+                     'email': self.__email_check,
+                     'DOB'  : self.__dob_check}
+
+        # answer to be created                     
+        answer = []
+
+        # possible error messases
+        message = ["app_login_error",
+                   "app_email_error",
+                   "app_date_format_YYYY-MM-DD_error"]
+
+        # validation
+        for num, field in enumerate(("login", "email", "DOB")):
+            if validate[field](reg_info[field]):
+                answer.append(message[num])
+
+        # appendin success message if no errors found
+        if answer == []:
+            answer.append("success")
+
+        return answer
 
     @jsonify
     def index(self):
@@ -54,35 +103,19 @@ class RegistrationController(BaseController):
                     "password": request.POST['password'], 
                     "DOB"     : request.POST['dob'], 
                     "location": request.POST['location']}
-
-        # objects needed to be checked
-        validate =  {'login': self.__login_check,
-                     'email': self.__email_check,
-                     'DOB'  : self.__dob_check}
-
-        # answer to be created                     
-        answer = []
-
-        # possible error messases
-        message = ["app_login_error",
-                   "app_email_error",
-                   "app_date_format_YYYY-MM-DD_error",
-                   "success"]
-
-        # validation
-        for num, field in enumerate(("login", "email", "DOB")):
-            if validate[field](reg_info[field]):
-                answer.append(message[num])
+ 
+        # answer to be sent to the client
+        answer = self.__validate_registration(reg_info)
 
         # adding a new user if no errors found
-        if answer == []:
+        if answer == ["success"]:
             new_user = User(reg_info["login"], 
                             reg_info["password"], 
                             reg_info["email"], 
                             reg_info["DOB"], 
                             reg_info["location"])
             Session.add(new_user)
-            Session.commit()
-            answer.append(message[-1])       
+            Session.commit()  
+
         return  {"ANSWER": answer}
             
