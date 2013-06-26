@@ -7,7 +7,7 @@ from pylons.controllers.util import abort, redirect
 
 from pylons.decorators import jsonify
 from guessword.model.meta import Session
-from guessword.model import User
+from guessword.model.user import User
 
 from guessword.lib.base import BaseController, render
 
@@ -28,14 +28,14 @@ class LoginController(BaseController):
                     "password": (request.POST["userPassword"]).encode('utf8')}
 
         # checking if user with specified login and password exists.
-        user_info = Session.query(User.Login, User.Password, User.Email, User.DOB, User.Location).\
+        user_info = Session.query(User.Login, User.Email, User.DOB, User.Location).\
         filter(((User.Login == log_info["login"]) | (User.Email == log_info["login"])) & (User.Password == log_info["password"]))
 
         # responce
         json_user = {}
 
         # creating a JSON object
-        attributes = ("login", "pass", "email", "dob", "location")
+        attributes = ("login", "email", "dob", "location")
         if user_info.first():
             user_info = list(user_info.first())
             # turning date format into a string
@@ -44,7 +44,5 @@ class LoginController(BaseController):
             user_info[-1] = unicode(user_info[-1])
             for (num, attr) in enumerate(attributes):
                 json_user[attr] = user_info[num]
-        else:
-            json_user["ANSWER"] = "User does not exist"
         
         return json_user
