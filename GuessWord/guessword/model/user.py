@@ -11,16 +11,20 @@ class User(Base):
     '''
     __tablename__ = 'user'
     
-    ID       = Column(Integer, primary_key=True)
-    Login    = Column(Unicode)
-    Password = Column(Unicode)
-    Email    = Column(String)
-    DOB      = Column(Date)
-    Location = Column(Unicode)
+    UserID     = Column(Integer, primary_key=True)
+    Login      = Column(Unicode)
+    Password   = Column(Unicode)
+    Email      = Column(String)
+    DOB        = Column(Date)
+    Location   = Column(Unicode)
+    URL        = Column(String)
+    FacebookID = Column(Unicode)
 
-    def __init__(self, login, password, email, DOB, location):
-        self.Login    = login
-        self.Password = password
-        self.Email    = email
-        self.DOB      = DOB
-        self.Location = location
+    def __init__(self, login, password, email, DOB, location, facebookID="", url="http://guessword.com/"):
+        self.Login      = login
+        self.Password   = password
+        self.Email      = email
+        self.DOB        = DOB
+        self.Location   = location
+        self.URL        = url
+        self.FacebookID = facebookID

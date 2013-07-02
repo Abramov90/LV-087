@@ -5,8 +5,8 @@ import logging
 from pylons.decorators import jsonify
 from guessword.model.meta import Session
 from guessword.model.user import User
+from guessword.model.training import Training
 import re
-
 
 from pylons import request, response, session, tmpl_context as c, url
 from pylons.controllers.util import abort, redirect
@@ -82,11 +82,37 @@ class RegistrationController(BaseController):
             if validate[field](reg_info[field]):
                 answer.append(message[num])
 
-        # appendin success message if no errors found
+        # appending success message if no errors found
         if answer == []:
             answer.append("success")
 
         return answer
+
+    def __send_email(self, user_password, reg_info):
+        "Sends an email to the user with his login and password."
+        import smtplib
+        import datetime
+
+        from_addr = 'guessword@gmail.com'  
+        to_addr  = reg_info["email"] 
+
+        subj = "GuessWord registration"
+        date = datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
+
+        message_text = "Wellcome to GuessWord!\nYour login: %s\nYour password:%s\n\nThank you!\n" \
+        % (reg_info["login"], user_password)
+
+        msg = "From: %s\nTo: %s\nSubject: %s\nDate: %s\n\n%s" \
+        % (from_addr, to_addr, subj, date, message_text)
+
+        username = 'iryna.rushchyshyn'  
+        password = 'cheesecl0th'  
+
+        server = smtplib.SMTP('smtp.gmail.com:587')  
+        server.starttls()  
+        server.login(username, password)  
+        server.sendmail(from_addr, to_addr, msg)  
+        server.quit()
 
     @jsonify
     def index(self):
@@ -103,19 +129,20 @@ class RegistrationController(BaseController):
                     "password": request.POST['password'], 
                     "DOB"     : request.POST['dob'], 
                     "location": request.POST['location']}
- 
+
         # answer to be sent to the client
         answer = self.__validate_registration(reg_info)
 
         # adding a new user if no errors found
         if answer == ["success"]:
+            self.__send_email(reg_info["password"], reg_info)
             new_user = User(reg_info["login"], 
                             reg_info["password"], 
                             reg_info["email"], 
                             reg_info["DOB"], 
                             reg_info["location"])
             Session.add(new_user)
-            Session.commit()  
+            Session.commit()
 
         return  {"ANSWER": answer}
             
