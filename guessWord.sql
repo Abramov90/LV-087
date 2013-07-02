@@ -3,11 +3,28 @@ DROP DATABASE IF EXISTS GuessWord;
 CREATE DATABASE GuessWord;
 
 CREATE TABLE IF NOT EXISTS GuessWord.user (
-  `ID` int(11) NOT NULL AUTO_INCREMENT,
-  `Login` nvarchar(15) NOT NULL,
-  `Password` nvarchar(15) NOT NULL,
-  `Email` varchar(50) NOT NULL,
+  `UserID` INT(11) NOT NULL AUTO_INCREMENT,
+  `Login` NVARCHAR(15) NOT NULL,
+  `Password` NVARCHAR(15) NOT NULL,
+  `FacebookID` NVARCHAR(30) NOT NULL,
+  `Email` VARCHAR(50) NOT NULL,
   `DOB` DATE NOT NULL,
-  `Location` nvarchar(50) NOT NULL,
-  PRIMARY KEY (`ID`)
+  `Location` NVARCHAR(50) NOT NULL,
+  `URL` VARCHAR(100) DEFAULT "http://guessword.com/",
+  `Instructions` INT(15) DEFAULT 0,
+  PRIMARY KEY (`UserID`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;
+
+CREATE TABLE IF NOT EXISTS GuessWord.training (
+  `TrainID` INT(11) NOT NULL AUTO_INCREMENT,
+  `UserID` INT(11) NOT NULL,
+  `Trainings` INT(15) NOT NULL,
+  `WordsCorrect` INT(15) NOT NULL,
+  `WordsIncorrect` INT(15) NOT NULL,
+  `TrainingTime`  INT(15) NOT NULL,
+  `TotalScore` INT(15) NOT NULL,
+  `Ratio` FLOAT(2,2) NOT NULL,
+  `TrainDate` DATE NOT NULL,
+  PRIMARY KEY (`TrainID`),
+  FOREIGN KEY (`UserID`) REFERENCES  GuessWord.user(`UserID`)  
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;
