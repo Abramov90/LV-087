@@ -31,19 +31,8 @@ class LoginController(BaseController):
         query = Session.query(User).\
         filter(((User.Login == log_info["login"]) | (User.Email == log_info["login"])) \
             & (User.Password == log_info["password"]))
-        
-        if query.first():
-            id = query.first().UserID
-            # calculatimg the average results of a user
-            training_query = Session.query(func.count(Training.Trainings).label('training'),
-                                        func.sum(Training.WordsCorrect).label('wordsCorrect'),
-                                        func.sum(Training.WordsIncorrect).label('wordsIncorrect'),
-                                        func.sum(Training.TrainingTime).label('trainingTime'),
-                                        func.sum(Training.TotalScore).label('totalScore'),
-                                        func.avg(Training.Ratio).label('ratioQuery')).\
-                                        filter(Training.UserID == id)
 
-            return query.first(), training_query.first()
+        return query.first()
 
     def __calculate_user_age(self, user_info):
         """Returns age of the user.
@@ -75,23 +64,13 @@ class LoginController(BaseController):
 
         # creating a JSON object with user info if such user exists
         try:
-            user_info, training_info = self.__user_exists(log_info)
+            user_info= self.__user_exists(log_info)
             json_user = { 
-                "main": {
-                    "login"   : user_info.Login, 
-                    "email"   : user_info.Email,
-                    "url"     : user_info.URL,
-                    "age"     : self.__calculate_user_age(user_info),
-                    "location": user_info.Location
-                }, 
-                "training": {
-                    "app_trainings"     : training_info.training,
-                    "app_wordsCorrect"  : training_info.wordsCorrect,
-                    "app_wordsIncorrect": training_info.wordsIncorrect,
-                    "app_trainingTime"  : training_info.trainingTime, 
-                    "app_totalScore"    : training_info.totalScore,
-                    "app_ratio"         : training_info.ratioQuery
-                }
+                "login"   : user_info.Login, 
+                "email"   : user_info.Email,
+                "url"     : user_info.URL,
+                "age"     : self.__calculate_user_age(user_info),
+                "location": user_info.Location
             }
         except TypeError:
             return json_user

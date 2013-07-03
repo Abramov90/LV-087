@@ -18,7 +18,6 @@ CREATE TABLE IF NOT EXISTS GuessWord.user (
 CREATE TABLE IF NOT EXISTS GuessWord.training (
   `TrainID` INT(11) NOT NULL AUTO_INCREMENT,
   `UserID` INT(11) NOT NULL,
-  `Trainings` INT(15) NOT NULL,
   `WordsCorrect` INT(15) NOT NULL,
   `WordsIncorrect` INT(15) NOT NULL,
   `TrainingTime`  INT(15) NOT NULL,

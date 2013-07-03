@@ -84,35 +84,9 @@ class RegistrationController(BaseController):
 
         # appending success message if no errors found
         if answer == []:
-            answer.append("success")
+            answer.append(1)
 
         return answer
-
-    def __send_email(self, user_password, reg_info):
-        "Sends an email to the user with his login and password."
-        import smtplib
-        import datetime
-
-        from_addr = 'guessword@gmail.com'  
-        to_addr  = reg_info["email"] 
-
-        subj = "GuessWord registration"
-        date = datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
-
-        message_text = "Wellcome to GuessWord!\nYour login: %s\nYour password:%s\n\nThank you!\n" \
-        % (reg_info["login"], user_password)
-
-        msg = "From: %s\nTo: %s\nSubject: %s\nDate: %s\n\n%s" \
-        % (from_addr, to_addr, subj, date, message_text)
-
-        username = 'iryna.rushchyshyn'  
-        password = 'cheesecl0th'  
-
-        server = smtplib.SMTP('smtp.gmail.com:587')  
-        server.starttls()  
-        server.login(username, password)  
-        server.sendmail(from_addr, to_addr, msg)  
-        server.quit()
 
     @jsonify
     def index(self):
@@ -134,8 +108,7 @@ class RegistrationController(BaseController):
         answer = self.__validate_registration(reg_info)
 
         # adding a new user if no errors found
-        if answer == ["success"]:
-            self.__send_email(reg_info["password"], reg_info)
+        if answer == [1]:
             new_user = User(reg_info["login"], 
                             reg_info["password"], 
                             reg_info["email"], 
