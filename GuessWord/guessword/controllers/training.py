@@ -15,37 +15,81 @@ log = logging.getLogger(__name__)
 
 class TrainingController(BaseController):
     def __ratio(self, correct, incorrect):
-        '''
-        '''
+        """Returns a value of correct words divided by the number of total words.
+
+        :Parameters:
+            correct  : (int) The number of words answered correctly.
+            incorrect: (int) The number of words answered incorrectly.
+        :Return:
+            (float) The number indicating the precentage of words answered correctly.
+        """
         if correct + incorrect == 0:
             return 0
         else:
-            return round(float(correct/(correct + incorrect)), 2)
+            return float(correct)/(correct + incorrect)
+
+    def __find_user(self, email):
+        """Returns ID of a user with a given email.
+
+        :Parameters:
+            email: (string) The user's email.
+        :Return:
+            (rowTuple) The ID of the user with a given email.
+        """
+        query = Session.query(User).filter(User.Email == email)
+
+        return query.first().UserID
+
+    def __generate_training_results(self, id):
+        """Returns training info of a user with given id.
+
+        :Parameters:
+            id: (rowTuple) The user's id.
+        :Return:
+            (object) Training info of a user from the training DB table.
+        """
+        # calculating general info about all of the user's trainings
+        training_query = Session.query(func.count(Training.UserID).label('training'),
+                                        func.sum(Training.WordsCorrect).label('wordsCorrect'),
+                                        func.sum(Training.WordsIncorrect).label('wordsIncorrect'),
+                                        func.sum(Training.TrainingTime).label('trainingTime'),
+                                        func.sum(Training.TotalScore).label('totalScore'),
+                                        func.avg(Training.Ratio).label('ratioQuery')).\
+                                        filter(Training.UserID == id).first()
+        # adding the calculated above info to JSON
+        json_user = { 
+            "trainings"     : training_query.training,
+            "wordsCorrect"  : training_query.wordsCorrect,
+            "wordsIncorrect": training_query.wordsIncorrect,
+            "trainingTime"  : training_query.trainingTime, 
+            "totalScore"    : training_query.totalScore,
+            "ratio"         : training_query.ratioQuery
+        }
+        return json_user
 
     @jsonify
-    def index(self):
-        '''
-        '''
+    def post(self):
+        """Accepts data about the new training and adds it to DB.
+        Returns a JSON representation of user training data, 
+        according to the email sent by the client.
+        """
         # Setting a response header to enable access control
         # using cross-origin resource sharing.
         response.headers['Access-Control-Allow-Origin']='*'
 
         # Accepting data from a request
-        training_info = {"login"         : request.POST['login'], 
-                         "trainings"     : int(request.POST['trainings']), 
+        training_info = {"email"         : request.POST['email'],
                          "wordsCorrect"  : int(request.POST['wordsCorrect']), 
                          "wordsIncorrect": int(request.POST['wordsIncorrect']), 
                          "trainingTime"  : int(request.POST['trainingTime']), 
                          "totalScore"    : int(request.POST['totalScore']),
                          "trainDate"     : request.POST['trainDate']}
-    
-        query = Session.query(User).filter(User.Login == training_info["login"])
-        id = query.first().UserID
+     
+        # finding id of a user according to the email sent in request
+        id = self.__find_user(training_info["email"])
 
-        user_info = query.first()
-
+        # generating a new training object and adding it to database
         new_training = Training(id, 
-                                training_info["trainings"], 
                                 training_info["wordsCorrect"], 
                                 training_info["wordsIncorrect"],
                                 training_info["trainingTime"],
@@ -55,22 +99,27 @@ class TrainingController(BaseController):
         Session.add(new_training)
         Session.commit()
 
-        training_query = Session.query(func.count(Training.Trainings).label('training'),
-                                        func.sum(Training.WordsCorrect).label('wordsCorrect'),
-                                        func.sum(Training.WordsIncorrect).label('wordsIncorrect'),
-                                        func.sum(Training.TrainingTime).label('trainingTime'),
-                                        func.sum(Training.TotalScore).label('totalScore'),
-                                        func.avg(Training.Ratio).label('ratioQuery')).\
-                                        filter(Training.UserID == id).first()
-
-        json_user = { 
-            "training": {
-                "app_trainings"     : training_query.training,
-                "app_wordsCorrect"  : training_query.wordsCorrect,
-                "app_wordsIncorrect": training_query.wordsIncorrect,
-                "app_trainingTime"  : training_query.trainingTime, 
-                "app_totalScore"    : training_query.totalScore,
-                "app_ratio"         : training_query.ratioQuery
-            }
-        }
+        # calculatimg the average results of a user and creating a JSON object
+        json_user = self.__generate_training_results(id)
         return json_user
+
+    @jsonify
+    def get(self):
+        """Returns a JSON representation of user training data, 
+        according to the email sent by the client.
+        """
+        # Setting a response header to enable access control
+        # using cross-origin resource sharing.
+        response.headers['Access-Control-Allow-Origin']='*'
+
+        # Accepting data from a request
+        
+        training_info = {"email": request.POST['email']}
+
+        # finding id of a user according to the email sent in request
+        id = self.__find_user(training_info["email"])
+
+        # calculatimg the average results of a user and creating a JSON object
+        json_user = self.__generate_training_results(id)
+        return json_user
+

@@ -15,7 +15,6 @@ class Training(Base):
     
     TrainID        = Column(Integer, primary_key=True)
     UserID         = Column(Integer, ForeignKey('user.UserID'))
-    Trainings      = Column(Integer)
     WordsCorrect   = Column(Integer)
     WordsIncorrect = Column(Integer)
     TrainingTime   = Column(Integer)
@@ -23,9 +22,8 @@ class Training(Base):
     Ratio          = Column(Float)
     TrainDate      = Column(Date)
 
-    def __init__(self, userID, trainings=0, wordsCorrect=0, wordsIncorrect=0, trainingTime=0, totalScore=0, ratio=0, trainDate="0000-00-00"):
+    def __init__(self, userID, wordsCorrect=0, wordsIncorrect=0, trainingTime=0, totalScore=0, ratio=0, trainDate="0000-00-00"):
         self.UserID         = userID
-        self.Trainings      = trainings
         self.WordsCorrect   = wordsCorrect
         self.WordsIncorrect = wordsIncorrect
         self.TrainingTime   = trainingTime
