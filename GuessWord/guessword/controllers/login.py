@@ -2,50 +2,22 @@
 from __future__ import unicode_literals
 import logging
 from datetime import date
+from sqlalchemy import func
 
 from pylons import request, response, session, tmpl_context as c, url
 from pylons.controllers.util import abort, redirect
-
 from pylons.decorators import jsonify
+
 from guessword.model.meta import Session
 from guessword.model.user import User
 from guessword.model.training import Training
-from sqlalchemy import func
+from guessword.service.login_service import Service
 
 from guessword.lib.base import BaseController, render
 
 log = logging.getLogger(__name__)
 
-class LoginController(BaseController):
-
-    def __user_exists(self, log_info):
-        """Returns a user object and its training results if user with 
-        specified login and password exists.
-
-        :Parameters:
-            log_info: (dict of str: unicode) Information entered by tne user.
-        :Return:
-            (class, class) User object if user exists anf None otherwise.
-        """
-        # checking if user with specified login and password exists
-        query = Session.query(User).\
-        filter(((User.Login == log_info["login"]) | (User.Email == log_info["login"])) \
-            & (User.Password == log_info["password"]))
-
-        return query.first()
-
-    def __calculate_user_age(self, user_info):
-        """Returns age of the user.
-
-        :Parameters:
-            user_info: (class) User object.
-        :Return:
-            (int) Age of the user.
-        """
-        if user_info.DOB is not None:
-            difference = date.today() - user_info.DOB
-            age = difference.days//365
-            return int(age)
+class LoginController(BaseController, Service):
 
     @jsonify
     def index(self):
@@ -56,23 +28,46 @@ class LoginController(BaseController):
         response.headers['Access-Control-Allow-Origin'] = '*'
 
         # accepting data from a request
-        log_info = {"login"   : (request.POST["userLogIn"]).encode('utf8'), 
-                    "password": (request.POST["userPassword"]).encode('utf8')}
-        
-        # responce
-        json_user = {}
+        login = (request.POST["userLogIn"]).encode('utf8')
+        password = (request.POST["userPassword"]).encode('utf8')
 
         # creating a JSON object with user info if such user exists
         try:
-            user_info= self.__user_exists(log_info)
-            json_user = { 
-                "login"   : user_info.Login, 
-                "email"   : user_info.Email,
-                "url"     : user_info.URL,
-                "age"     : self.__calculate_user_age(user_info),
-                "location": user_info.Location
-            }
-        except TypeError:
+            user = self.user_exists(login, password)
+            json_user = User.create_JSON_user(user, self.calculate_user_age(user.DOB))
             return json_user
+        except (AttributeError, TypeError):
+            return {}
 
-        return json_user
+    @jsonify
+    def facebook(self):
+        """Returns a JSON representation of user personal data, 
+        if the user with indicated email and facebookID exists,
+        otherwise registeres the user"""
+        # setting a response header to enable access control 
+        # using cross-origin resource sharing
+        response.headers['Access-Control-Allow-Origin'] = '*'
+
+        # accepting data from a request
+        login = request.POST['login'], 
+        email = request.POST['email'], 
+        facebookID = request.POST['facebookID'], 
+        DOB = request.POST['dob'], 
+        location = request.POST['location']
+        
+        # creating a JSON object with user info if such user exists
+        try:
+            user = self.email_exists(email)
+            User.add_facebookID(user, facebookID)
+            Session.update(user)
+            Session.commit()
+            json_user = User.create_JSON_user(user, self.calculate_user_age(user.DOB))
+            return json_user
+        except (AttributeError, TypeError):
+            # creating a new user
+            new_user = User(login, self.pass_generator(), email, DOB, location, facebookID)
+            Session.add(new_user)
+            Session.commit()
+            # creating a JSON object with user info
+            json_user = User.create_JSON_user(new_user, self.calculate_user_age(new_user.DOB))
+            return json_user
