@@ -49,25 +49,28 @@ class LoginController(BaseController, Service):
         response.headers['Access-Control-Allow-Origin'] = '*'
 
         # accepting data from a request
-        login = request.POST['login'], 
-        email = request.POST['email'], 
-        facebookID = request.POST['facebookID'], 
-        DOB = request.POST['dob'], 
-        location = request.POST['location']
+        email = request.POST['facebookEmail']
+        facebookID = request.POST['facebookID']
+        DOB = request.POST['facebookBirthday']
+        location = request.POST['facebookLocale']
+        login = request.POST['facebookLogin']
         
         # creating a JSON object with user info if such user exists
         try:
-            user = self.email_exists(email)
-            User.add_facebookID(user, facebookID)
-            Session.update(user)
-            Session.commit()
+            user = self.facebook_user_exists(email, facebookID)
             json_user = User.create_JSON_user(user, self.calculate_user_age(user.DOB))
             return json_user
         except (AttributeError, TypeError):
-            # creating a new user
-            new_user = User(login, self.pass_generator(), email, DOB, location, facebookID)
-            Session.add(new_user)
-            Session.commit()
+            # creating a new user or adding facebookID to existing user
+            if Session.query(User.Email).filter(User.Email == email).first():
+                user = Session.query(User).filter(User.Email == email).first()
+                User.add_facebookID(user, facebookID)
+                Session.update(user)
+                Session.commit()
+            else:
+                user = User(login, self.pass_generator(), email, DOB, location, facebookID)
+                Session.add(user)
+                Session.commit()
             # creating a JSON object with user info
-            json_user = User.create_JSON_user(new_user, self.calculate_user_age(new_user.DOB))
+            json_user = User.create_JSON_user(user, self.calculate_user_age(user.DOB))
             return json_user

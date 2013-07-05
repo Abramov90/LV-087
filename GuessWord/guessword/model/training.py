@@ -9,8 +9,8 @@ from guessword.model.user import User
 
 global Training
 class Training(Base):
-    '''Establishes the connection with a training table in DB.
-    '''
+    """Establishes the connection with a training table in DB.
+    """
     __tablename__ = 'training'
     
     TrainID        = Column(Integer, primary_key=True)

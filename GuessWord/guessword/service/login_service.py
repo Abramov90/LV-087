@@ -21,7 +21,7 @@ log = logging.getLogger(__name__)
 global Service
 class Service(object):
 
-    def user_exists(self, loginORemail, password):
+    def user_exists(self, login_or_email, password):
         """Returns a user object and its training results if user with 
         specified login and password exists.
 
@@ -32,11 +32,11 @@ class Service(object):
             (class, class) User object if user exists anf None otherwise.
         """
         # checking if user with specified login and password exists
-        query = Session.query(User).\
-        filter(((User.Login == loginORemail) | (User.Email == loginORemail)) \
+        user = Session.query(User).\
+        filter(((User.Login == login_or_email) | (User.Email == login_or_email)) \
             & (User.Password == password))
 
-        return query.first()
+        return user.first()
 
     def calculate_user_age(self, DOB):
         """Returns age of the user.
@@ -56,7 +56,7 @@ class Service(object):
         """
         return ''.join(random.choice(chars) for x in range(size))
 
-    def email_exists(self, email):
+    def facebook_user_exists(self, email, facebookID):
         """Returns True if user with specified email already exists in DB.
 
         :Parameters:
@@ -64,6 +64,6 @@ class Service(object):
         :Return:
             (bool) True if email exists in DB and None otherwise.
         """
-        email_exists = \
-                Session.query(User).filter(User.Email == email).first()
-        return email_exists
+        facebook_user = Session.query(User).\
+        filter((User.Email == email) & (User.facebookID == facebookID))
+        return facebook_user.first()

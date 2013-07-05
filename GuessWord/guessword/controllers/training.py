@@ -78,24 +78,19 @@ class TrainingController(BaseController):
         response.headers['Access-Control-Allow-Origin']='*'
 
         # Accepting data from a request
-        training_info = {"email"         : request.POST['email'],
-                         "wordsCorrect"  : int(request.POST['wordsCorrect']), 
-                         "wordsIncorrect": int(request.POST['wordsIncorrect']), 
-                         "trainingTime"  : int(request.POST['trainingTime']), 
-                         "totalScore"    : int(request.POST['totalScore']),
-                         "trainDate"     : request.POST['trainDate']}
-     
+        email = request.POST['email']
+        wordsCorrect = int(request.POST['wordsCorrect'])
+        wordsIncorrect = int(request.POST['wordsIncorrect'])
+        trainingTime = int(request.POST['trainingTime'])
+        totalScore = int(request.POST['totalScore'])
+        trainDate = request.POST['trainDate']
+
         # finding id of a user according to the email sent in request
-        id = self.__find_user(training_info["email"])
+        id = self.__find_user(email)
 
         # generating a new training object and adding it to database
-        new_training = Training(id, 
-                                training_info["wordsCorrect"], 
-                                training_info["wordsIncorrect"],
-                                training_info["trainingTime"],
-                                training_info["totalScore"],
-                                self.__ratio(training_info["wordsCorrect"], training_info["wordsIncorrect"]),
-                                training_info["trainDate"])
+        new_training = Training(id, wordsCorrect, wordsIncorrect, trainingTime, \
+            totalScore, self.__ratio(wordsCorrect, wordsIncorrect), trainDate)
         Session.add(new_training)
         Session.commit()
 
@@ -113,13 +108,11 @@ class TrainingController(BaseController):
         response.headers['Access-Control-Allow-Origin']='*'
 
         # Accepting data from a request
-        
-        training_info = {"email": request.POST['email']}
+        email = request.POST['email']
 
         # finding id of a user according to the email sent in request
-        id = self.__find_user(training_info["email"])
+        id = self.__find_user(email)
 
         # calculatimg the average results of a user and creating a JSON object
         json_user = self.__generate_training_results(id)
         return json_user
-
