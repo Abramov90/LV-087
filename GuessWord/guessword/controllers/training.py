@@ -14,12 +14,13 @@ from sqlalchemy import func
 log = logging.getLogger(__name__)
 
 class TrainingController(BaseController):
+    """Operates data containing user's training results"""
     def __ratio(self, correct, incorrect):
         """Returns a value of correct words divided by the number of total words.
 
         :Parameters:
-            correct  : (int) The number of words answered correctly.
-            incorrect: (int) The number of words answered incorrectly.
+            correct (int): The number of words answered correctly.
+            incorrect (int): The number of words answered incorrectly.
         :Return:
             (float) The number indicating the precentage of words answered correctly.
         """
@@ -32,7 +33,7 @@ class TrainingController(BaseController):
         """Returns ID of a user with a given email.
 
         :Parameters:
-            email: (string) The user's email.
+            email (string): The user's email.
         :Return:
             (rowTuple) The ID of the user with a given email.
         """
@@ -44,7 +45,7 @@ class TrainingController(BaseController):
         """Returns training info of a user with given id.
 
         :Parameters:
-            id: (rowTuple) The user's id.
+            id (rowTuple): The user's id.
         :Return:
             (object) Training info of a user from the training DB table.
         """

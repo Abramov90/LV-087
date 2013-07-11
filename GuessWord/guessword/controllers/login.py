@@ -53,7 +53,7 @@ class LoginController(BaseController, Service):
         facebookID = request.POST['facebookID']
         DOB = request.POST['facebookBirthday']
         location = request.POST['facebookLocale']
-        login = request.POST['facebookLogin']
+        login = email[:email.index('@')]
         
         # creating a JSON object with user info if such user exists
         try:
