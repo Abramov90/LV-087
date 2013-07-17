@@ -7,8 +7,7 @@ from guessword.model.meta import Session, Base
 
 global User
 class User(Base):
-    """Establishes the connection with a user table in DB.
-    """
+    """Establishes the connection with a user table in DB."""
     __tablename__ = 'user'
     
     UserID     = Column(Integer, primary_key=True)
@@ -30,8 +29,10 @@ class User(Base):
         self.FacebookID = facebookID
 
     def add_facebookID(self, facebookID):
+        """Adds a facebook ID to database"""
         self.FacebookID = facebookID
 
     def create_JSON_user(self, age):
+        """Returns a JSON representation of a user"""
         return {"login": self.Login, "email": self.Email, \
         "url": self.URL, "age": age, "location": self.Location}
