@@ -18,7 +18,8 @@ log = logging.getLogger(__name__)
 class RegistrationController(BaseController):
 
     def __email_check(self, email):
-        """Returns True if user with specified email already exists in DB.
+        """
+        Returns True if user with specified email already exists in DB.
 
         :Parameters:
             email: (unicode) An email provided by the user.
@@ -31,7 +32,8 @@ class RegistrationController(BaseController):
             return True
 
     def __login_check(self, login):
-        """Returns True if user with specified login already exists in DB.
+        """
+        Returns True if user with specified login already exists in DB.
 
         :Parameters:
             login: (unicode) A login provided by the user.
@@ -43,19 +45,9 @@ class RegistrationController(BaseController):
         if login_exists:
             return True
 
-    def __dob_check(self, DOB):
-        """Returns True if user has entered DOB data in a wrong format.
-
-        :Parameters:
-            DOB: (unicode) A date of birth provided by user.
-        :Return:
-            (bool) True if DOB is of wrong format and False otherwise.
-        """
-        if str(DOB) != '' and re.match("\d{4}-\d{2}-\d{2}", str(DOB)) == None:
-            return True
-
     def __validate_registration(self, reg_info):
-        """Returns message ["success"] if user entered data in a required 
+        """
+        Returns success message if user entered data in a required 
         format and unique login and email 
         Otherwise returns a list of errors.
 
@@ -66,31 +58,28 @@ class RegistrationController(BaseController):
         """
         # objects needed to be checked
         validate =  {'login': self.__login_check,
-                     'email': self.__email_check,
-                     'DOB'  : self.__dob_check}
+                     'email': self.__email_check}
 
         # answer to be created                     
-        answer = []
-
-        # possible error messases
-        message = ["app_login_error",
-                   "app_email_error",
-                   "app_date_format_YYYY-MM-DD_error"]
+        answer = {}
 
         # validation
-        for num, field in enumerate(("login", "email", "DOB")):
+        for field in ("login", "email"):
             if validate[field](reg_info[field]):
-                answer.append(message[num])
+                answer[field] = "app_back_" + field
 
         # appending success message if no errors found
-        if answer == []:
-            answer.append(1)
+        if answer == {}:
+            answer["SUCCESS"] = 1
+        else:
+            response.status = 405
 
         return answer
 
     @jsonify
     def index(self):
-        """Adds a new user to the user table if another user
+        """
+        Adds a new user to the user table if another user
         with the same login does not exist.
         """
         # Setting a response header to enable access control
@@ -108,7 +97,7 @@ class RegistrationController(BaseController):
         answer = self.__validate_registration(reg_info)
 
         # adding a new user if no errors found
-        if answer == [1]:
+        if "SUCCESS" in answer.keys():
             new_user = User(reg_info["login"], 
                             reg_info["password"], 
                             reg_info["email"], 
@@ -117,5 +106,5 @@ class RegistrationController(BaseController):
             Session.add(new_user)
             Session.commit()
 
-        return  {"ANSWER": answer}
+        return answer
             

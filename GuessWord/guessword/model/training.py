@@ -9,8 +9,7 @@ from guessword.model.user import User
 
 global Training
 class Training(Base):
-    """Establishes the connection with a training table in DB.
-    """
+    """Establishes the connection with a training table in DB."""
     __tablename__ = 'training'
     
     TrainID        = Column(Integer, primary_key=True)
@@ -30,3 +29,9 @@ class Training(Base):
         self.TotalScore     = totalScore
         self.Ratio          = ratio
         self.TrainDate      = trainDate
+
+    def create_JSON_training(self):
+        """Returns a JSON representation of training results"""
+        return {"trainings": self.UserID, "wordsCorrect": self.WordsCorrect , \
+        "wordsIncorrect": self.WordsIncorrect, "trainingTime": self.TrainingTime, \
+        "totalScore": self.TotalScore, "ratio": self.Ratio}

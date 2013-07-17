@@ -21,8 +21,10 @@ class LoginController(BaseController, Service):
 
     @jsonify
     def index(self):
-        """Returns a JSON representation of user personl data, 
-        if the user with indicated login and password exists"""
+        """
+        Returns a JSON representation of user personl data, 
+        if the user with indicated login and password exists
+        """
         # setting a response header to enable access control 
         # using cross-origin resource sharing
         response.headers['Access-Control-Allow-Origin'] = '*'
@@ -41,9 +43,11 @@ class LoginController(BaseController, Service):
 
     @jsonify
     def facebook(self):
-        """Returns a JSON representation of user personal data, 
+        """
+        Returns a JSON representation of user personal data, 
         if the user with indicated email and facebookID exists,
-        otherwise registeres the user"""
+        otherwise registeres the user
+        """
         # setting a response header to enable access control 
         # using cross-origin resource sharing
         response.headers['Access-Control-Allow-Origin'] = '*'

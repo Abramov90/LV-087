@@ -16,7 +16,8 @@ log = logging.getLogger(__name__)
 class TrainingController(BaseController):
     """Operates data containing user's training results"""
     def __ratio(self, correct, incorrect):
-        """Returns a value of correct words divided by the number of total words.
+        """
+        Returns a value of correct words divided by the number of total words.
 
         :Parameters:
             correct (int): The number of words answered correctly.
@@ -24,13 +25,11 @@ class TrainingController(BaseController):
         :Return:
             (float) The number indicating the precentage of words answered correctly.
         """
-        if correct + incorrect == 0:
-            return 0
-        else:
-            return float(correct)/(correct + incorrect)
+        return float(correct)/(correct + incorrect) if correct + incorrect != 0 else 0
 
     def __find_user(self, email):
-        """Returns ID of a user with a given email.
+        """
+        Returns ID of a user with a given email.
 
         :Parameters:
             email (string): The user's email.
@@ -42,7 +41,8 @@ class TrainingController(BaseController):
         return query.first().UserID
 
     def __generate_training_results(self, id):
-        """Returns training info of a user with given id.
+        """
+        Returns training info of a user with given id.
 
         :Parameters:
             id (rowTuple): The user's id.
@@ -50,27 +50,24 @@ class TrainingController(BaseController):
             (object) Training info of a user from the training DB table.
         """
         # calculating general info about all of the user's trainings
-        training_query = Session.query(func.count(Training.UserID).label('training'),
+        query = Session.query(func.count(Training.UserID).label('trainings'),
                                         func.sum(Training.WordsCorrect).label('wordsCorrect'),
                                         func.sum(Training.WordsIncorrect).label('wordsIncorrect'),
                                         func.sum(Training.TrainingTime).label('trainingTime'),
                                         func.sum(Training.TotalScore).label('totalScore'),
-                                        func.avg(Training.Ratio).label('ratioQuery')).\
+                                        func.avg(Training.Ratio).label('ratio')).\
                                         filter(Training.UserID == id).first()
+        # creating a training object with average results
+        average_training = Training(query.trainings, query.wordsCorrect, query.wordsIncorrect, \
+            query.trainingTime, query.totalScore, query.ratio)
         # adding the calculated above info to JSON
-        json_user = { 
-            "trainings"     : training_query.training,
-            "wordsCorrect"  : training_query.wordsCorrect,
-            "wordsIncorrect": training_query.wordsIncorrect,
-            "trainingTime"  : training_query.trainingTime, 
-            "totalScore"    : training_query.totalScore,
-            "ratio"         : training_query.ratioQuery
-        }
-        return json_user
+        json_training = Training.create_JSON_training(average_training)
+        return json_training
 
     @jsonify
     def post(self):
-        """Accepts data about the new training and adds it to DB.
+        """
+        Accepts data about the new training and adds it to DB.
         Returns a JSON representation of user training data, 
         according to the email sent by the client.
         """
@@ -101,7 +98,8 @@ class TrainingController(BaseController):
 
     @jsonify
     def get(self):
-        """Returns a JSON representation of user training data, 
+        """
+        Returns a JSON representation of user training data, 
         according to the email sent by the client.
         """
         # Setting a response header to enable access control
@@ -117,3 +115,4 @@ class TrainingController(BaseController):
         # calculatimg the average results of a user and creating a JSON object
         json_user = self.__generate_training_results(id)
         return json_user
+        
