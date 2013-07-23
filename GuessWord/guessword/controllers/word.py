@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 import logging
 import cgi
+from random import shuffle
 
 from pylons import request, response, session, tmpl_context as c, url
 from pylons.controllers.util import abort, redirect
@@ -34,6 +35,13 @@ class WordController(BaseController):
             "to acquire": ("вимагати", "сперичатись", "здобувати", "сумніватись"),
             "frequency": ("частота", "дивина", "залежність", "спокій"),
             "doubt": ("впеаненість", "впертість", "ворожість", "сумнів"),
+            "template": ("шаблон", "тарілка", "швидкість", "боротьба"),
+            "to gueess": ("вгадувати", "бити", "шукати", "питати"),
+            "ache": ("біль", "спрага", "шрам", "вправа"),
+            "keyboard": ("клавіатура", "дошка", "полиця", "гра"),
+            "permanent": ("тривалий", "точний", "строгий", "гострий"),
+            "accurate": ("точний", "акуратний", "стриманий", "чепурний"),
+            "persistence": ("наполегливість", "впевненість", "впертість", "тривалість"),
         }
 
         for word in words:
@@ -46,6 +54,7 @@ class WordController(BaseController):
         """
         Yavorovksy!
         """
+        log.info('My third Pylons log message!');
         # Setting a response header to enable access control
         # using cross-origin resource sharing.
         response.headers['Access-Control-Allow-Origin']='*'      
@@ -66,8 +75,11 @@ class WordController(BaseController):
 
         # addind words from BD 
         words_query = Session.query(Trywords)
-        for word in words_query:
-            key, value = Trywords.repr(word)
-            result[key] = value
+        ten_words = range(0, words_query.count())
+        shuffle(ten_words)
 
+        for num in ten_words[:10]:
+            key, value = Trywords.repr(words_query[num])
+            result[key] = value
+        
         return result

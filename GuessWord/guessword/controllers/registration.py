@@ -17,7 +17,7 @@ log = logging.getLogger(__name__)
 
 class RegistrationController(BaseController):
 
-    def __email_check(self, email):
+    def email_check(self, email):
         """
         Returns True if user with specified email already exists in DB.
 
@@ -28,10 +28,10 @@ class RegistrationController(BaseController):
         """
         email_exists = \
                 Session.query(User.Email).filter(User.Email == email).count()
-        if email_exists:
-            return True
+        
+        return True if email_exists else False
 
-    def __login_check(self, login):
+    def login_check(self, login):
         """
         Returns True if user with specified login already exists in DB.
 
@@ -42,10 +42,10 @@ class RegistrationController(BaseController):
         """
         login_exists = \
                 Session.query(User.Login).filter(User.Login == login).count()
-        if login_exists:
-            return True
+        
+        return True if login_exists else False
 
-    def __validate_registration(self, reg_info):
+    def validate_registration(self, login, email):
         """
         Returns success message if user entered data in a required 
         format and unique login and email 
@@ -56,23 +56,21 @@ class RegistrationController(BaseController):
         :Return:
             (list of str) A list of errors found.
         """
-        # objects needed to be checked
-        validate =  {'login': self.__login_check,
-                     'email': self.__email_check}
-
+        
         # answer to be created                     
         answer = {}
-
-        # validation
-        for field in ("login", "email"):
-            if validate[field](reg_info[field]):
-                answer[field] = "app_back_" + field
+        # checking login
+        if self.login_check(login):
+            answer['login'] = "app_back_login"
+        # checking email
+        if self.email_check(email):
+            answer['email'] = "app_back_email"            
 
         # appending success message if no errors found
         if answer == {}:
             answer["SUCCESS"] = 1
         else:
-            response.status = 405
+            pylons.response.status = 405
 
         return answer
 
@@ -87,22 +85,18 @@ class RegistrationController(BaseController):
         response.headers['Access-Control-Allow-Origin']='*'
 
         # Accepting data from a request
-        reg_info = {"login"   : request.POST['login'], 
-                    "email"   : request.POST['email'], 
-                    "password": request.POST['password'], 
-                    "DOB"     : request.POST['dob'], 
-                    "location": request.POST['location']}
+        login = request.POST['login']
+        email = request.POST['email']
+        password = request.POST['password']
+        DOB = request.POST['dob']
+        location = request.POST['location']
 
         # answer to be sent to the client
-        answer = self.__validate_registration(reg_info)
+        answer = self.validate_registration(login, email)
 
         # adding a new user if no errors found
         if "SUCCESS" in answer.keys():
-            new_user = User(reg_info["login"], 
-                            reg_info["password"], 
-                            reg_info["email"], 
-                            reg_info["DOB"], 
-                            reg_info["location"])
+            new_user = User(login, password, email, DOB, location)
             Session.add(new_user)
             Session.commit()
 
